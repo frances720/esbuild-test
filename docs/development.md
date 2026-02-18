@@ -31,3 +31,34 @@ If you want to test esbuild in the browser (lets you try out lots of things rapi
 1. Run `make platform-wasm` to build the WebAssembly version of esbuild
 2. Serve the repo directory over HTTP (such as with `./esbuild --servedir=.`)
 3. Visit [`/scripts/try.html`](../scripts/try.html) in your browser
+
+## Frequently asked questions
+
+### Why is esbuild written in Go instead of JavaScript?
+
+Performance. JavaScript isn't great for heavy parallelism because of Node's single-threaded nature and garbage collector overhead. Go compiles to native code, has efficient goroutines for parallelism, and a low-overhead garbage collector. This lets esbuild fully utilize all CPU cores during bundling.
+
+### How can I debug esbuild's bundling process?
+
+You can take a CPU trace using the `--trace=[file]` flag. View the resulting trace file with `go tool trace [file]`. This shows exactly what work is happening in parallel and helps identify performance bottlenecks.
+
+### Why does esbuild use only three AST passes?
+
+For better cache locality and performance. Most compilers have many more passes because separating concerns makes code easier to maintain. esbuild combines as much work as possible into three passes:
+
+1. Lexing + parsing + scope setup + symbol declaration
+2. Symbol binding + constant folding + syntax lowering + syntax mangling
+3. Printing + source map generation
+
+### How does esbuild handle both CommonJS and ES6 modules?
+
+The parser processes a superset of both module systems. You can use CommonJS syntax (`require`, `exports`, `module`) and ES6 syntax (`import`, `export`) in the same file. CommonJS modules are wrapped in closures, while ES6 modules use scope hoisting for better performance and smaller bundle sizes.
+
+### What should I know before modifying the parser?
+
+A few key points:
+
+- The lexer runs on-the-fly during parsing, not ahead of time
+- Lookahead is limited to one token in most cases (TypeScript is an exception)
+- Import path resolution syscalls have high overhead, so results are cached
+- Data structures must remain immutable to support watch mode
