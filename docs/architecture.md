@@ -39,14 +39,6 @@ Note that there are some design decisions that have been made differently than o
 
     The parser in esbuild processes a superset of both ES6 and CommonJS modules. It doesn't distinguish between ES6 modules and other modules so you can use both ES6 and CommonJS syntax in the same file if you'd like.
 
-* **Try to do as few full-AST passes as possible for better cache locality**
-
-    Compilers usually have many more passes because separate passes makes code easier to understand and maintain. There are currently only three full-AST passes in esbuild because individual passes have been merged together as much as possible:
-
-    1. Lexing + parsing + scope setup + symbol declaration
-    2. Symbol binding + constant folding + syntax lowering + syntax mangling
-    3. Printing + source map generation
-
 * **Structure things to permit a "watch mode" where compilation can happen incrementally**
 
     Incremental builds mean only rebuilding changed files to the greatest extent possible. This means not re-running any of the full-AST passes on unchanged files. Data structures that live across builds must be immutable to allow sharing. Unfortunately the Go type system can't enforce this, so care must be taken to uphold this as the code evolves.
