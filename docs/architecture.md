@@ -29,7 +29,7 @@ Note that there are some design decisions that have been made differently than o
 
 * **Maximize parallelism**
 
-    Most of the time should be spent doing fully parallelizable work. This can be observed by taking a CPU trace using the `--trace=[file]` flag and viewing it using `go tool trace [file]`.
+    Most of the time should be spent doing fully parallelizable work.
 
 * **Avoid doing unnecessary work**
 
